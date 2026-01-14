@@ -102,8 +102,9 @@ Debug unfamiliar modules confidently
 Prepare for backend / ERPNext interviews
 Demonstrate real-world RAG with embeddings on a production-scale codebase
 
+## 🏗️ Project Structure
+
 ``` bash
-🏗️ Project Structure
 my-erpnext-analyzer/
 │
 ├── main.py                 # Unified CLI entry point
@@ -120,12 +121,14 @@ my-erpnext-analyzer/
 ```
 ## 🛠️ Tech Stack
 
+``` bash
 Python 3.10+
 AST (Abstract Syntax Tree) – static code parsing
 ChromaDB – vector database for storing embeddings
 Google Gemini API – embedding generation and answer synthesis
 Colorama – readable CLI output
 Argparse – command-line interface
+```
 
 ## ⚙️ Setup
 ### Create virtual environment
