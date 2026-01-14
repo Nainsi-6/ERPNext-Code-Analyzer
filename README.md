@@ -153,7 +153,7 @@ GOOGLE_API_KEY=your_gemini_api_key_here
 
 Indexes ERPNext by generating embeddings for code chunks and storing them in ChromaDB.
 
-# Index entire ERPNext folder
+### Index entire ERPNext folder
 ``` bash
 python main.py rag-init ./erpnext
 ```
@@ -190,7 +190,7 @@ Line ranges
 Similarity score
 Relevant code snippets
 
-# 🧪 Static Analysis (Without RAG)
+## 🧪 Static Analysis (Without RAG)
 
 ### Analyze a single file
 ``` bash
