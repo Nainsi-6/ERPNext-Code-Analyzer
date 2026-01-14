@@ -1,6 +1,6 @@
 # ERPNext Code Analyzer 🔍
 
-##Code Intelligence + RAG Q&A tool for ERPNext using embeddings + LLM
+## Code Intelligence + RAG Q&A tool for ERPNext using embeddings + LLM
 
 A practical AI-powered tool for understanding, exploring, and questioning large Python codebases, built specifically with ERPNext in mind.
 
