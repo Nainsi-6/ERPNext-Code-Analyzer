@@ -1,92 +1,233 @@
-ERPNext Code Analyzer 🔍
+## ERPNext Code Analyzer 🔍
 
-An AI-powered static code analysis tool designed to analyze large Python codebases like **ERPNext**.  
-This tool extracts code structure, detects relationships, flags potential issues, and generates high-level insights using **Google Gemini**.
+A practical AI-powered tool for understanding, exploring, and questioning large Python codebases, built specifically with ERPNext in mind.
 
-## 🚀 What This Tool Does
+Instead of relying on keyword search, this tool indexes the codebase using embeddings, understands structure and relationships, and lets you ask natural-language questions using a Retrieval-Augmented Generation (RAG) approach grounded strictly in real source code.
 
-- 📦 Analyzes **single Python files** or **entire folders**
-- 🧠 Extracts:
-  - Classes
-  - Functions
-  - Imports
-- 🔗 Detects **function call relationships**
-- ⚠️ Detects **code quality issues**
-  - Large functions
-  - Large classes
-  - ERPNext-specific validation smells
-- 🤖 Uses **Gemini AI** to explain:
-  - Business logic
-  - Responsibilities
-  - Design concerns
-- 📊 Outputs:
-  - Clean terminal summaries
-  - Optional structured JSON reports
+##  What This Tool Does:
 
----
+# 1. Static Code Analysis
+
+Analyze a single Python file or an entire folder
+
+Extracts:
+Classes
+Functions
+Imports
+Detects:
+
+Function-to-function call relationships
+Large functions and large classes
+Common ERPNext validation and design issues
+Useful when you want a quick structural understanding without using the LLM
+
+2. RAG-based Code Questioning (Core Feature)
+
+This tool uses a Retrieval-Augmented Generation (RAG) pipeline powered by embeddings + an LLM to answer questions directly from real code.
+
+🔹 Full Codebase Questions
+
+Ask questions across the entire ERPNext repository:
+``` bash
+python main.py rag-ask "Where are validation errors raised?"
+``` 
+
+Example use cases:
+
+Understanding global flows
+Finding validations spread across multiple modules
+Learning how ERPNext works end-to-end
+
+🔹 Folder-based Questions
+
+Limit questions to a specific functional area (accounts, stock, selling, etc.):
+
+``` bash
+python main.py rag-ask "How are taxes calculated?" --folder erpnext/erpnext/accounts
+```
+
+Example use cases:
+Exploring business logic inside a module
+Debugging issues scoped to one domain
+Understanding module-level responsibilities
+
+🔹 File-based Questions
+
+Ask questions about one exact file only:
+
+``` bash
+python main.py rag-ask "Which methods calculate totals?" --file erpnext/erpnext/accounts/doctype/sales_invoice/sales_invoice.py
+```
+
+Example use cases:
+Deep-diving into a single DocType
+Reviewing unfamiliar files
+Interview preparation on specific code
+
+3. How the LLM Is Used:
+
+Python code is chunked and converted into embeddings
+Embeddings are stored in ChromaDB
+
+On each question:
+
+Relevant code chunks are retrieved using vector similarity
+Only those chunks are sent to the LLM (Google Gemini)
+The answer is generated strictly from retrieved code, not from assumptions
+
+This ensures:
+
+No hallucinated answers
+Fully code-grounded responses
+Traceable logic back to real files
+
+4. AI-Assisted Understanding (Developer-Focused)
+
+Using the retrieved code context, the LLM helps to:
+
+Explain business logic
+Summarize what a module or file actually does
+Highlight design and validation concerns
+Answer questions in a clear, backend-developer tone
+
+🧠 Why This Is Useful
+
+ERPNext is large and difficult to navigate.
+
+This tool helps you:
+
+Onboard faster into ERPNext internals
+
+Understand hidden flows (taxes, validations, lifecycle hooks)
+
+Debug unfamiliar modules confidently
+
+Prepare for backend / ERPNext interviews
+
+Demonstrate real-world RAG with embeddings on a production-scale codebase
+
 ``` bash
 🏗️ Project Structure
 my-erpnext-analyzer/
 │
-├── analyze.py              # Main CLI entry point
-├── extractor.py            # AST-based code extractor
+├── main.py                 # Unified CLI entry point
+├── rag.py                  # RAG system (embeddings + retrieval + Gemini)
+├── extractor.py            # AST-based structure extractor
 ├── relationships.py        # Function call relationship detector
-├── errors.py               # Code issue detector
+├── errors.py               # Code smell & validation detector
 ├── output.py               # Terminal + JSON formatter
-├── requirements.txt        # Dependencies
+├── requirements.txt        # Python dependencies
 ├── README.md
-└── erpnext/                # ERPNext source (Git submodule)
+│
+├── chroma_db/              # Vector database (auto-generated)
+└── erpnext/                # ERPNext source code
+```
+🛠️ Tech Stack
 
+Python 3.10+
+
+AST (Abstract Syntax Tree) – static code parsing
+
+ChromaDB – vector database for storing embeddings
+
+Google Gemini API – embedding generation and answer synthesis
+
+Colorama – readable CLI output
+
+Argparse – command-line interface
+
+⚙️ Setup
+# Create virtual environment
+``` bash
+python -m venv venv
+source venv/bin/activate   # Windows: venv\Scripts\activate
+```
+
+# Install dependencies
+``` bash
+pip install -r requirements.txt
 ```
 
 
-What It Does
+Create a .env file:
 
-1. **Extracts DocType Info**: Reads all DocType JSON files
-   - Number of fields
-   - Field types distribution
-   - Link relationships
-
-2. **Analyzes Relationships**: Maps which DocTypes reference which
-   - Sales Invoice → Customer
-   - Purchase Order → Supplier
-   - etc.
-
-3. **Generates Reports**: Creates JSON exports and terminal summaries
-
-How to Use
-
-```bash
-# Analyze ERPNext core
-python analyze.py /path/to/erpnext
-
-# View results
-cat erpnext_analysis/doctypes.json
-cat erpnext_analysis/relationships.json
+``` bash
+GOOGLE_API_KEY=your_gemini_api_key_here
 ```
 
-Output Files
+📦 Build the RAG Database (Required Once)
 
-- `doctypes.json`: All DocType information
-- `relationships.json`: All DocType relationships
-- Terminal summary with statistics
+Indexes ERPNext by generating embeddings for code chunks and storing them in ChromaDB.
 
-Example Output
-
+# Index entire ERPNext folder
+``` bash
+python main.py rag-init ./erpnext
 ```
-Entity: Sales Invoice
-Total Fields: 224
-Field Types: Link(8), Data(12), Check(5), Table(3), ...
+This step:
+Splits Python files into chunks
+Generates embeddings for each chunk
+Stores them in chroma_db
+Needs to be run once per codebase
 
-Relationships:
-- Sales Invoice → Customer (field: customer)
-- Sales Invoice → Company (field: company)
-- Sales Invoice → Project (field: project)
+❓ Ask Questions Using RAG
+Global (entire codebase)
+``` bash
+python main.py rag-ask "Where are validation errors raised?"
 ```
 
-Learning Outcomes
+Folder-scoped question
+``` bash
+python main.py rag-ask "How are taxes calculated?" --folder erpnext/erpnext/accounts
+```
 
-- Understanding DocType structure
-- Analyzing JSON schemas programmatically
-- Mapping entity relationships
-- Data processing and summarization
+File-scoped question
+``` bash
+python main.py rag-ask "How are taxes calculated?" --file erpnext/erpnext/accounts/doctype/sales_invoice/sales_invoice.py
+```
+Each answer is generated using retrieved embeddings, ensuring responses are grounded in real code.
+
+🔍 Keyword Search (Vector-based)
+``` bash
+python main.py rag-search "tax"
+```
+Returns:
+Matching files
+Line ranges
+Similarity score
+Relevant code snippets
+
+# 🧪 Static Analysis (Without RAG)
+
+Analyze a single file
+``` bash
+python main.py analyze erpnext/erpnext/accounts/doctype/sales_invoice/sales_invoice.py
+```
+Analyze a folder
+``` bash
+python main.py analyze erpnext/erpnext/accounts
+```
+
+Optional JSON output:
+``` bash
+python main.py analyze erpnext/erpnext/accounts --json
+```
+
+📤 Outputs
+Clean terminal summaries
+Optional structured JSON reports
+RAG Q&A history stored in:
+rag_queries.json
+
+
+🧩 Example Output (RAG)
+``` bash
+Question: How are taxes calculated?
+```
+Answer:
+``` bash
+Taxes are calculated through calculate_taxes_and_totals, which iterates
+over tax rows and items, applying charge types such as "Actual",
+"On Net Total", and "On Previous Row Amount".
+```
+
+❤️ Made by Nainsi Gupta
